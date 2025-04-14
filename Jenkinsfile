@@ -5,7 +5,7 @@ pipeline {
         PROJECT_ID = 'groupmicroservices'         
         CLUSTER_NAME = 'student-survey-cluster'    // Your GKE cluster name
         CLUSTER_ZONE = 'us-central1-a'             // Your GKE zone
-        CREDENTIALS_ID = 'gcp-credentials'         // Jenkins credential ID for the JSON key
+        CREDENTIALS_ID = 'jenkins-gcp-key'         // Jenkins credential ID for the JSON key
     }
 
     stages {

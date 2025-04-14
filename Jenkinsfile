@@ -15,9 +15,16 @@ pipeline {
             }
         }
 
+        stage('Maven Build') {
+            steps {
+                // Run the Maven build to generate the JAR file.
+                sh './mvnw clean package -DskipTests'
+            }
+        }
 
         stage('Build Docker Image') {
             steps {
+                sh 'ls -la target/'
                 sh 'docker build -t gcr.io/$PROJECT_ID/student-survey-service:latest .'
             }
         }

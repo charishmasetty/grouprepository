@@ -11,9 +11,10 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/charishmasetty/grouprepository'
+                git branch: 'main', url: 'https://github.com/charishmasetty/grouprepository'
             }
         }
+
 
         stage('Build Docker Image') {
             steps {

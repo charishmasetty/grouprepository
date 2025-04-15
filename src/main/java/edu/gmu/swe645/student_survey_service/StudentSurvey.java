@@ -35,4 +35,11 @@ public class StudentSurvey {
     public void setInterestSource(String interestSource) { this.interestSource = interestSource; }
     private String recommendation;
     public void setRecommendation(String recommendation) { this.recommendation = recommendation; }
+
+     @Transient // indicates that this field is not persisted in the database
+     public String getFullName() {
+         String fName = (firstName != null ? firstName : "");
+         String lName = (lastName != null ? lastName : "");
+         return fName + (fName.isEmpty() || lName.isEmpty() ? "" : " ") + lName;
+     }
 }

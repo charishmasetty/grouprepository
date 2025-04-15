@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: student-survey
-        image: gcr.io/groupmicroservices/student-survey-service:latest
+        image: charishmasetty/student-survey-service:latest
         ports:
         - containerPort: 8080

@@ -19,6 +19,7 @@ pipeline {
             steps {
                 // Run the Maven build to generate the JAR file.
                 sh './mvnw clean package -DskipTests'
+                sh 'unzip -p target/student-survey-service-0.0.1-SNAPSHOT.jar BOOT-INF/classes/edu/gmu/swe645/student_survey_service/StudentSurvey.class | strings | grep name'
             }
         }
 

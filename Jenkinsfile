@@ -3,44 +3,44 @@ pipeline {
 
     environment {
         PROJECT_ID = 'groupmicroservices'         
-        CLUSTER_NAME = 'student-survey-cluster'    
-        CLUSTER_ZONE = 'us-central1-a'             
-        CREDENTIALS_ID = 'jenkins-gcp-key'         
-        IMAGE_NAME = 'student-survey-service'
+        CLUSTER_NAME = 'student-survey-cluster'    // Your GKE cluster name
+        CLUSTER_ZONE = 'us-central1-a'             // Your GKE zone
+        CREDENTIALS_ID = 'jenkins-gcp-key'         // Jenkins credential ID for the JSON key
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/charishmasetty/grouprepository.git'
+                git branch: 'main', url: 'https://github.com/charishmasetty/grouprepository'
             }
         }
 
         stage('Maven Build') {
             steps {
+                // Run the Maven build to generate the JAR file.
                 sh './mvnw clean package -DskipTests'
             }
         }
 
         stage('Build Docker Image') {
             steps {
+                // sh 'ls -la target/'
                 sh 'docker system prune -a -f'
-                sh 'docker rmi charishmasetty/${IMAGE_NAME}:latest || true'
-                sh 'docker build -t charishmasetty/${IMAGE_NAME}:latest .'
+                sh 'docker rmi charishmasetty/student-survey-service:latest || true'
+                sh 'docker build -t charishmasetty/student-survey-service:latest .'
             }
         }
 
-        stage('Push Docker Image to GCR') {
+        stage('Push Docker Image') {
             steps {
                 withCredentials([file(credentialsId: "${CREDENTIALS_ID}", variable: 'GCP_KEY')]) {
-                    sh '''
-                        gcloud auth activate-service-account --key-file=$GCP_KEY
-                        gcloud config set project $PROJECT_ID
-                        docker tag charishmasetty/${IMAGE_NAME}:latest gcr.io/$PROJECT_ID/${IMAGE_NAME}:latest
-                        docker push gcr.io/$PROJECT_ID/${IMAGE_NAME}:latest
-                    '''
-                }
+                    
+                    sh 'gcloud auth activate-service-account --key-file=$GCP_KEY'
+                    sh 'gcloud config set project $PROJECT_ID'
+                    sh 'docker tag charishmasetty/student-survey-service:latest gcr.io/groupmicroservices/student-survey-service:latest'
+                    sh 'docker push gcr.io/$PROJECT_ID/student-survey-service:latest'
             }
+        }
         }
 
         stage('Deploy to GKE') {
@@ -53,15 +53,11 @@ pipeline {
 
                         kubectl apply -f student-survey-deployment.yaml
                         kubectl apply -f student-survey-service.yaml
-
-                        # Force update to make sure the new image is used
-                        kubectl set image deployment/student-survey-deployment student-survey=gcr.io/$PROJECT_ID/${IMAGE_NAME}:latest --record=true
-
-                        # Wait for rollout to complete
-                        kubectl rollout status deployment/student-survey-deployment
+                        kubectl rollout restart deployment student-survey-deployment
                     '''
+                        sh 'kubectl set image deployment/student-survey-deployment student-survey=charishmasetty/student-survey-service:latest --record=true'
                 }
             }
         }
-    }
+}
 }

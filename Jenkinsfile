@@ -53,8 +53,8 @@ pipeline {
 
                         kubectl apply -f student-survey-deployment.yaml
                         kubectl apply -f student-survey-service.yaml
-                        kubectl set image deployment/student-survey-deployment student-survey=charishmasetty/student-survey-service:latest --record=true
                     '''
+                        sh 'kubectl set image deployment/student-survey-deployment student-survey=charishmasetty/student-survey-service:latest --record=true'
                 }
             }
         }

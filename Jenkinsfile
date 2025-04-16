@@ -57,11 +57,15 @@ pipeline {
             }
         }
 
-        stage('Verify Deployment Logs') {
+       stage('Verify Deployment Logs') {
             steps {
-                sh 'kubectl get pods'
-                sh 'kubectl logs $(kubectl get pod -l app=student-survey -o jsonpath="{.items[0].metadata.name}")'
+                script {
+                    def podName = sh(script: "kubectl get pod -l app=student-survey -o jsonpath='{.items[0].metadata.name}'", returnStdout: true).trim()
+                    echo "Fetching logs from pod: ${podName}"
+                    sh "kubectl logs ${podName}"
+                }
             }
         }
+
     }
 }

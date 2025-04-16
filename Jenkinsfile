@@ -25,7 +25,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 // sh 'ls -la target/'
-                sh 'docker system prune -a'
+                sh 'docker system prune -a -f'
                 sh 'docker rmi charishmasetty/student-survey-service:latest || true'
                 sh 'docker build -t charishmasetty/student-survey-service:latest .'
             }
@@ -36,8 +36,9 @@ pipeline {
                 withCredentials([file(credentialsId: "${CREDENTIALS_ID}", variable: 'GCP_KEY')]) {
                     
                     sh 'gcloud auth activate-service-account --key-file=$GCP_KEY'
-                    sh  'gcloud config set project $PROJECT_ID'
-                    sh  'docker push gcr.io/$PROJECT_ID/student-survey-service:latest'
+                    sh 'gcloud config set project $PROJECT_ID'
+                    sh 'docker tag charishmasetty/student-survey-service:latest gcr.io/groupmicroservices/student-survey-service:latest'
+                    sh 'docker push gcr.io/$PROJECT_ID/student-survey-service:latest'
             }
         }
         }
@@ -52,6 +53,8 @@ pipeline {
 
                         kubectl apply -f student-survey-deployment.yaml
                         kubectl apply -f student-survey-service.yaml
+                        kubectl rollout restart deployment student-survey-deployment
+                        kubectl rollout status deployment student-survey-deployment
                     '''
                         sh 'kubectl set image deployment/student-survey-deployment student-survey=charishmasetty/student-survey-service:latest --record=true'
                 }

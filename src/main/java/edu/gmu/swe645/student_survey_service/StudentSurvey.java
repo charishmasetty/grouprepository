@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 @Entity
 @Table(name = "student_survey")
 @Data                         // <‑‑ Lombok generates getters, setters, toString, equals, hashCode
@@ -37,12 +35,4 @@ public class StudentSurvey {
     public void setInterestSource(String interestSource) { this.interestSource = interestSource; }
     private String recommendation;
     public void setRecommendation(String recommendation) { this.recommendation = recommendation; }
-
-     @Transient
-    @JsonProperty
-    public String getFullName() {
-        String fName = (firstName != null ? firstName : "");
-        String lName = (lastName != null ? lastName : "");
-        return fName + (fName.isEmpty() || lName.isEmpty() ? "" : " ") + lName;
-    }
 }

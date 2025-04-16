@@ -24,6 +24,7 @@ public class StudentSurveyController {
     // READ ALL
     @GetMapping
     public List<StudentSurvey> getAll() {
+        System.out.println("Jenkins build trigger change: getAll endpoint invoked!");
         return repo.findAll();
     }
 

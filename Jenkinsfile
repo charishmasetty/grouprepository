@@ -38,9 +38,8 @@ pipeline {
                     sh 'gcloud auth activate-service-account --key-file=$GCP_KEY'
                     sh  'gcloud config set project $PROJECT_ID'
                     sh  'docker push gcr.io/$PROJECT_ID/student-survey-service:latest'
-                    '''
-                }
             }
+        }
         }
 
         stage('Deploy to GKE') {
@@ -58,14 +57,5 @@ pipeline {
                 }
             }
         }
-
-      stage('Verify Deployment Logs') {
-            steps {
-                sh 'kubectl get pods'
-                // Display logs from the first pod with label app=student-survey
-                sh 'kubectl logs $(kubectl get pod -l app=student-survey -o jsonpath="{.items[0].metadata.name}")'
-            }
-        }
-
-    }
+}
 }

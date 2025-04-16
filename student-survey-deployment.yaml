@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: student-survey-deployment
+  labels:
+    app-version: "v1-{{BUILD_ID}}"
 spec:
   replicas: 1
   selector:

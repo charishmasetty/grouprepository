@@ -25,26 +25,26 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                // sh 'ls -la target/'
+                script {
+                    // Generate a timestamp tag
+                    env.TAG = "v$(date +%s)"
+                }
                 sh 'docker system prune -a -f'
                 sh 'docker rmi charishmasetty/student-survey-service:latest || true'
-                sh 'TAG=v' + sh(script: 'date +%s', returnStdout: true).trim()
                 sh 'docker build -t gcr.io/groupmicroservices/student-survey-service:$TAG .'
-                sh 'docker push gcr.io/groupmicroservices/student-survey-service:$TAG'
-
             }
         }
 
         stage('Push Docker Image') {
             steps {
                 withCredentials([file(credentialsId: "${CREDENTIALS_ID}", variable: 'GCP_KEY')]) {
-                    
-                    sh 'gcloud auth activate-service-account --key-file=$GCP_KEY'
-                    sh 'gcloud config set project $PROJECT_ID'
-                    sh 'docker tag charishmasetty/student-survey-service:latest gcr.io/groupmicroservices/student-survey-service:$TAG'
-                    sh 'docker push gcr.io/$PROJECT_ID/student-survey-service:$TAG'
+                    sh '''
+                        gcloud auth activate-service-account --key-file=$GCP_KEY
+                        gcloud config set project $PROJECT_ID
+                        docker push gcr.io/groupmicroservices/student-survey-service:$TAG
+                    '''
+                }
             }
-        }
         }
 
         stage('Deploy to GKE') {
@@ -55,12 +55,12 @@ pipeline {
                         gcloud config set project $PROJECT_ID
                         gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE
 
-                        kubectl apply -f student-survey-deployment.yaml
-                        kubectl apply -f student-survey-service.yaml
+                        kubectl set image deployment/student-survey-deployment student-survey=gcr.io/groupmicroservices/student-survey-service:$TAG
+                        kubectl rollout status deployment/student-survey-deployment
                     '''
-                    sh 'kubectl set image deployment/student-survey-deployment student-survey=gcr.io/groupmicroservices/student-survey-service:$TAG --record'
                 }
             }
         }
+
 }
 }

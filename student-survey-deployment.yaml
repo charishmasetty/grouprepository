@@ -19,4 +19,4 @@ spec:
         image: gcr.io/groupmicroservices/student-survey-service:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 8088
+        - containerPort: 8080

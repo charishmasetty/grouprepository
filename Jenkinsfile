@@ -27,7 +27,7 @@ pipeline {
             steps {
                 script {
                     // Generate a timestamp tag
-                    env.TAG = "v$(date +%s)"
+                    TAG = sh(script: 'date +%s', returnStdout: true).trim()
                 }
                 sh 'docker system prune -a -f'
                 sh 'docker rmi charishmasetty/student-survey-service:latest || true'

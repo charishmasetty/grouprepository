@@ -28,9 +28,7 @@ pipeline {
                 // sh 'ls -la target/'
                 sh 'docker system prune -a -f'
                 sh 'docker rmi charishmasetty/student-survey-service:latest || true'
-                environment {
-                    TAG = "v${new Date().getTime() / 1000 as int}"
-                }
+                sh 'TAG=v' + sh(script: 'date +%s', returnStdout: true).trim()
                 sh 'docker build -t gcr.io/groupmicroservices/student-survey-service:$TAG .'
                 sh 'docker push gcr.io/groupmicroservices/student-survey-service:$TAG'
 

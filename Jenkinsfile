@@ -28,7 +28,9 @@ pipeline {
                 // sh 'ls -la target/'
                 sh 'docker system prune -a -f'
                 sh 'docker rmi charishmasetty/student-survey-service:latest || true'
-                sh 'TAG=v$(date +%s)'
+                environment {
+                    TAG = "v${new Date().getTime() / 1000 as int}"
+                }
                 sh 'docker build -t gcr.io/groupmicroservices/student-survey-service:$TAG .'
                 sh 'docker push gcr.io/groupmicroservices/student-survey-service:$TAG'
 
@@ -41,8 +43,8 @@ pipeline {
                     
                     sh 'gcloud auth activate-service-account --key-file=$GCP_KEY'
                     sh 'gcloud config set project $PROJECT_ID'
-                                    sh 'docker tag charishmasetty/student-survey-service:latest gcr.io/groupmicroservices/student-survey-service:latest'
-                    sh 'docker push gcr.io/$PROJECT_ID/student-survey-service:latest'
+                    sh 'docker tag charishmasetty/student-survey-service:latest gcr.io/groupmicroservices/student-survey-service:$TAG'
+                    sh 'docker push gcr.io/$PROJECT_ID/student-survey-service:$TAG'
             }
         }
         }
@@ -58,7 +60,7 @@ pipeline {
                         kubectl apply -f student-survey-deployment.yaml
                         kubectl apply -f student-survey-service.yaml
                     '''
-                    sh 'kubectl set image deployment/student-survey-deployment student-survey=gcr.io/groupmicroservices/student-survey-service:latest --record=true'
+                    sh 'kubectl set image deployment/student-survey-deployment student-survey=gcr.io/groupmicroservices/student-survey-service:$TAG --record'
                 }
             }
         }

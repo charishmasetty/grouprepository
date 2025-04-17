@@ -2,26 +2,16 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_ID = 'groupmicroservices'         
+        PROJECT_ID = 'groupmicroservices'
         CLUSTER_NAME = 'student-survey-cluster'
         CLUSTER_ZONE = 'us-central1-a'
         CREDENTIALS_ID = 'jenkins-gcp-key'
     }
 
-    options {
-        skipDefaultCheckout()
-        durabilityHint('PERFORMANCE_OPTIMIZED')
-    }
-
     stages {
-        stage('Clean Workspace') {
-            steps {
-                deleteDir()
-            }
-        }
-
         stage('Checkout') {
             steps {
+                deleteDir()
                 git branch: 'main', url: 'https://github.com/charishmasetty/grouprepository'
             }
         }
@@ -29,32 +19,31 @@ pipeline {
         stage('Maven Build') {
             steps {
                 sh './mvnw clean package -DskipTests'
-                sh 'unzip -p target/student-survey-service-0.0.1-SNAPSHOT.jar BOOT-INF/classes/edu/gmu/swe645/student_survey_service/StudentSurvey.class | strings | grep name || echo "Not Found"'
+                sh 'unzip -p target/student-survey-service-0.0.1-SNAPSHOT.jar BOOT-INF/classes/edu/gmu/swe645/student_survey_service/StudentSurvey.class | strings | grep Survey || echo "Not Found"'
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    def timestamp = System.currentTimeMillis().intdiv(1000)
-                    env.TAG = "v${timestamp}"
+                    env.TAG = "v${System.currentTimeMillis() / 1000}"
                 }
                 sh """
-                    echo "Tag is ${TAG}"
-                    docker build -t gcr.io/groupmicroservices/student-survey-service:${TAG} .
-                    docker tag gcr.io/groupmicroservices/student-survey-service:${TAG} gcr.io/groupmicroservices/student-survey-service:latest
+                    echo "Building image with tag: $TAG"
+                    docker build --no-cache -t gcr.io/$PROJECT_ID/student-survey-service:$TAG .
+                    docker tag gcr.io/$PROJECT_ID/student-survey-service:$TAG gcr.io/$PROJECT_ID/student-survey-service:latest
                 """
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                withCredentials([file(credentialsId: "${CREDENTIALS_ID}", variable: 'GCP_KEY')]) {
+                withCredentials([file(credentialsId: CREDENTIALS_ID, variable: 'GCP_KEY')]) {
                     sh """
                         gcloud auth activate-service-account --key-file=$GCP_KEY
                         gcloud config set project $PROJECT_ID
-                        docker push gcr.io/groupmicroservices/student-survey-service:${TAG}
-                        docker push gcr.io/groupmicroservices/student-survey-service:latest
+                        docker push gcr.io/$PROJECT_ID/student-survey-service:$TAG
+                        docker push gcr.io/$PROJECT_ID/student-survey-service:latest
                     """
                 }
             }
@@ -62,12 +51,13 @@ pipeline {
 
         stage('Deploy to GKE') {
             steps {
-                withCredentials([file(credentialsId: "${CREDENTIALS_ID}", variable: 'GCP_KEY')]) {
+                withCredentials([file(credentialsId: CREDENTIALS_ID, variable: 'GCP_KEY')]) {
                     sh """
                         gcloud auth activate-service-account --key-file=$GCP_KEY
                         gcloud config set project $PROJECT_ID
                         gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE
-                        kubectl set image deployment/student-survey-deployment student-survey=gcr.io/groupmicroservices/student-survey-service:${TAG}
+                        kubectl set image deployment/student-survey-deployment student-survey=gcr.io/$PROJECT_ID/student-survey-service:$TAG
+                        kubectl rollout status deployment/student-survey-deployment
                     """
                 }
             }

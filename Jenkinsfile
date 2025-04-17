@@ -24,17 +24,15 @@ pipeline {
         }
 
         stage('Build Docker Image') {
-    steps {
-        script {
-            def TAG = "v${sh(script: 'date +%s', returnStdout: true).trim()}"
-            env.IMAGE_NAME = "gcr.io/groupmicroservices/student-survey-service:${TAG}"
+            steps {
+                script {
+                    // Generate a timestamp-based tag
+                    env.TAG = "v${System.currentTimeMillis() / 1000}"
+                }
+                sh 'docker build -t gcr.io/groupmicroservices/student-survey-service:$TAG .'
+                sh 'docker tag gcr.io/groupmicroservices/student-survey-service:$TAG gcr.io/groupmicroservices/student-survey-service:latest'
+            }
         }
-
-        sh 'docker system prune -a -f || true'
-        sh 'docker rmi charishmasetty/student-survey-service:latest || true'
-        sh "docker build -t ${env.IMAGE_NAME} ."
-    }
-}
 
 stage('Push Docker Image') {
     steps {
@@ -42,8 +40,9 @@ stage('Push Docker Image') {
             sh '''
                 gcloud auth activate-service-account --key-file=$GCP_KEY
                 gcloud config set project $PROJECT_ID
+                docker push gcr.io/groupmicroservices/student-survey-service:$TAG
+                docker push gcr.io/groupmicroservices/student-survey-service:latest
             '''
-            sh "docker push ${env.IMAGE_NAME}"
         }
     }
 }

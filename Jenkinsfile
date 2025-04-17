@@ -28,7 +28,9 @@ pipeline {
                 // sh 'ls -la target/'
                 sh 'docker system prune -a -f'
                 sh 'docker rmi charishmasetty/student-survey-service:latest || true'
-                sh 'docker build --platform=linux/amd64 -t charishmasetty/student-survey-service:latest .'
+                sh 'TAG=v$(date +%s)'
+                sh 'docker build -t gcr.io/groupmicroservices/student-survey-service:$TAG .'
+                sh 'docker push gcr.io/groupmicroservices/student-survey-service:$TAG'
 
             }
         }

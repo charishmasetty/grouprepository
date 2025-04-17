@@ -26,12 +26,14 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    env.TAG = "v${System.currentTimeMillis() / 1000}"
+                    def timestamp = System.currentTimeMillis().intdiv(1000)
+                    env.TAG = "v${timestamp}"
                 }
+
                 sh """
                     echo "Building image with tag: $TAG"
-                    docker build --no-cache -t gcr.io/$PROJECT_ID/student-survey-service:$TAG .
-                    docker tag gcr.io/$PROJECT_ID/student-survey-service:$TAG gcr.io/$PROJECT_ID/student-survey-service:latest
+                    docker build --platform linux/amd64 -t gcr.io/groupmicroservices/student-survey-service:$TAG .
+                    docker tag gcr.io/groupmicroservices/student-survey-service:$TAG gcr.io/groupmicroservices/student-survey-service:latest
                 """
             }
         }

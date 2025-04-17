@@ -33,7 +33,6 @@ pipeline {
         sh 'docker system prune -a -f || true'
         sh 'docker rmi charishmasetty/student-survey-service:latest || true'
         sh "docker build -t ${env.IMAGE_NAME} ."
-        sh 'docker run --rm gcr.io/groupmicroservices/student-survey-service:<TAG> strings app.jar | grep /api/surveys/test'
     }
 }
 

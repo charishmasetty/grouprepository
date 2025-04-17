@@ -19,6 +19,7 @@ stages {
             deleteDir() // Deletes entire workspace
         }
     }
+}
 
     stages {
         stage('Checkout') {

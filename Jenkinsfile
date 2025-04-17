@@ -57,7 +57,6 @@ stage('Deploy to GKE') {
                 gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_ZONE
             '''
             sh "kubectl set image deployment/student-survey-deployment student-survey=${env.IMAGE_NAME}"
-            sh "kubectl rollout status deployment/student-survey-deployment"
         }
     }
 }

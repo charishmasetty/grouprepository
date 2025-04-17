@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 
-//import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "student_survey")
@@ -14,7 +14,7 @@ public class StudentSurvey {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //@JsonProperty("name")
+    @JsonProperty("name")
     private String firstName;
     public void setFirstName(String firstName) { this.firstName = firstName; }
     private String lastName;

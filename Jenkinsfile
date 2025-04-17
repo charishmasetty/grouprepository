@@ -26,13 +26,16 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Generate a timestamp-based tag
                     env.TAG = "v${System.currentTimeMillis() / 1000}"
                 }
-                sh 'docker build -t gcr.io/groupmicroservices/student-survey-service:$TAG .'
-                sh 'docker tag gcr.io/groupmicroservices/student-survey-service:$TAG gcr.io/groupmicroservices/student-survey-service:latest'
+                sh '''
+                    echo "Tag is $TAG"
+                    docker build -t gcr.io/groupmicroservices/student-survey-service:$TAG .
+                    docker tag gcr.io/groupmicroservices/student-survey-service:$TAG gcr.io/groupmicroservices/student-survey-service:latest
+                '''
             }
         }
+
 
 stage('Push Docker Image') {
     steps {

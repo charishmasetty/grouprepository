@@ -26,7 +26,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    env.TAG = "v${System.currentTimeMillis() / 1000}"
+                    env.TAG = "v${System.currentTimeMillis().intdiv(1000)}"
                 }
                 sh '''
                     echo "Tag is $TAG"
